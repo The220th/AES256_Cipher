@@ -1,3 +1,3 @@
-java The220th.crypto.EAS256Cipher.AES256
+java The220th.crypto.EAS256Cipher.BusinessLogic
 pause
 CMD /Q /K

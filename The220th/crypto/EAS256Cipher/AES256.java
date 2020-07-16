@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Штука, которая умеет шифровать с помощью AES 256 бит
+ https://coderoad.ru/992019/Java-256-%D0%B1%D0%B8%D1%82%D0%BD%D0%BE%D0%B5-AES-%D1%88%D0%B8%D1%84%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BD%D0%B0-%D0%BE%D1%81%D0%BD%D0%BE%D0%B2%D0%B5-%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8F
  */
 public class AES256
 {
@@ -224,13 +225,13 @@ public class AES256
 			cipher.init( mode, this.secretKey );
 			if(mode == AES256.ifENCRYPT)
 			{
-				msg = new byte[ rawMessage.length + rawMessage.length + 1 ]; // S 0 S 0 S 0 S 0 S 0 S 0 S 0 S 0 S, где S - соль, а 0 - исходные байты
-				buff = new byte[rawMessage.length + 1];
+				msg = new byte[ rawMessage.length + rawMessage.length]; // 0 S 0 S 0 S 0 S 0 S 0 S 0 S 0 S, где S - соль, а 0 - исходные байты
+				buff = new byte[rawMessage.length];
 				secRND.nextBytes(buff);
 
 				for(i = 0, j = 0, k = 0; i < msg.length; i++)
 				{
-					if(i % 2 == 0)
+					if(i % 2 == 1)
 					{
 						msg[i] = buff[j];
 						j++;
@@ -241,15 +242,17 @@ public class AES256
 						k++;
 					}
 				}
+				//System.out.println("\n\n" + ByteArrToStr(msg) + " size: " + msg.length);
 				output = cipher.doFinal(msg);
+				//System.out.println(ByteArrToStr(output) + " size: " + output.length + "\n\n");
 			}
 			else if (mode == AES256.ifDECRYPT)
 			{
-				output = cipher.doFinal(rawMessage); // S 0 S 0 S 0 S 0 S 0 S 0 S 0 S 0 S, где S - соль, а 0 - исходные байты
-				buff = new byte[(rawMessage.length - 1)/2];
+				output = cipher.doFinal(rawMessage); // 0 S 0 S 0 S 0 S 0 S 0 S 0 S 0 S, где S - соль, а 0 - исходные байты
+				buff = new byte[rawMessage.length/2];
 
 				for(i = 0, j = 0; i < output.length; i++)
-					if(i % 2 == 1)
+					if(i % 2 == 0)
 					{
 						buff[j] = output[i];
 						j++;
@@ -281,6 +284,30 @@ public class AES256
         int spaceNum = text.getBytes().length%16==0?0:16-text.getBytes().length%16;
         for (int i = 0; i<spaceNum; i++) text += " ";
         return text;
+	}
+
+	/**
+	 * Дополняет массив байт до длины 256 байт элементом filler. Если в small уже > 256 или 0, или null, то вернёт просто массив, где все элементы - это filler.
+	 * 
+	 * @param small
+	 * @param filler
+	 * @return массив, где 256 байт
+	 */
+	public static byte[] fill256(byte[] small, byte filler) 
+	{
+		byte[] big = new byte[256];
+		int i;
+		if(small == null || small.length == 0 || small.length > 256)
+			for(i = 0; i < big.length; i++)
+				big[i] = filler;
+		else
+		{
+			for(i = 0; i < small.length; i++)
+				big[i] = small[i];
+			for(; i < big.length; i++)
+				big[i] = filler;
+		}
+		return big;
 	}
 
 	/**
